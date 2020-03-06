@@ -38,11 +38,13 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if !spinner.isAnimating {
-            spinner.startAnimating()
-        }
         
         if (indexPath.item == self.photosArray.count - 5)  {
+            
+            if !spinner.isAnimating {
+                spinner.startAnimating()
+            }
+            
                 if (self.photosArray.count < self.photosLinks.count) {
                         loadImages(pos: position, off: offset) { (completion) in
                                                
