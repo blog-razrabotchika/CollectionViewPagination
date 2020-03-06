@@ -1,0 +1,16 @@
+PODS:
+  - NHBalancedFlowLayout (0.2)
+
+DEPENDENCIES:
+  - NHBalancedFlowLayout (~> 0.2)
+
+SPEC REPOS:
+  trunk:
+    - NHBalancedFlowLayout
+
+SPEC CHECKSUMS:
+  NHBalancedFlowLayout: fd253023c6754e605acdb180d50123e582cc62bb
+
+PODFILE CHECKSUM: 1053bd8fe9dcd190d73f683ecb1c348eb934ad95
+
+COCOAPODS: 1.8.4
