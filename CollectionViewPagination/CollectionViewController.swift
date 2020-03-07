@@ -12,29 +12,45 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     var position = 0
     
     var spinner = UIActivityIndicatorView()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        self.title = "CollectionViewPagination"
+        setupCollection()
+        addSpinner()
+
+        loadData { (imageUrls) in
+            self.photosLinks = imageUrls
+            self.recountOffset()
+            self.downloadAllImages()
+        }
+    }
+    
+    func recountOffset() {
+        if (self.photosLinks.count <= offset - 1) {
+            offset = photosLinks.count
+            print("Offset: \(offset)")
+        }
+    }
     
     func collectionView(_ collectionView: UICollectionView!, layout collectionViewLayout: NHBalancedFlowLayout!, preferredSizeForItemAt indexPath: IndexPath!) -> CGSize {
         let size = photosArray[indexPath.item].size
         return size
     }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
+    
+    func setupCollection() {
+        self.collectionView.collectionViewLayout = NHBalancedFlowLayout()
         self.collectionView!.register(AlbumCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView?.delegate = self
         self.collectionView?.dataSource = self
-        
+    }
+    
+    func addSpinner() {
         self.view.addSubview(spinner)
-        spinner.center = self.view.center
-        spinner.style = .large
-        spinner.startAnimating()
-        
-        loadData { (imageUrls) in
-            self.photosLinks = imageUrls
-            print(self.photosLinks)
-            self.downloadAllImages()
-        }
+            spinner.center = self.view.center
+            spinner.style = .large
+            spinner.startAnimating()
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -49,9 +65,7 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
                         loadImages(pos: position, off: offset) { (completion) in
                                                
                         self.photosArray.append(contentsOf: completion)
-                            
-                        print("links: \(self.photosLinks.count) || Photos: \(self.photosArray.count)")
-                                               
+                                                                        
                             do {
                                 self.countIndexPathsAndUpdate()
                             }
