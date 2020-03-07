@@ -16,15 +16,33 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "CollectionViewPagination"
         setupCollection()
+        setupNavBar()
         addSpinner()
 
-        loadData { (imageUrls) in
-            self.photosLinks = imageUrls
-            self.recountOffset()
-            self.downloadAllImages()
+        loadAPIData()
+    }
+    
+    @objc func loadAPIData() {
+        if self.photosLinks.count != 0 {
+            self.photosLinks.removeAll()
+            self.photosArray.removeAll()
+            offset = 15
+            position = 0
+            self.collectionView.reloadData()
         }
+        
+        loadData { (imageUrls) in
+                   self.photosLinks = imageUrls
+                   self.recountOffset()
+                   self.downloadAllImages()
+        }
+    }
+    
+    func setupNavBar() {
+        self.title = "CollectionViewPagination"
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(loadAPIData))
+
     }
     
     func recountOffset() {
@@ -46,20 +64,24 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
         self.collectionView?.dataSource = self
     }
     
+    func startSpinner() {
+        if !spinner.isAnimating {
+            spinner.startAnimating()
+        }
+    }
+    
+    
     func addSpinner() {
         self.view.addSubview(spinner)
             spinner.center = self.view.center
             spinner.style = .large
-            spinner.startAnimating()
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         
         if (indexPath.item == self.photosArray.count - 5)  {
             
-            if !spinner.isAnimating {
-                spinner.startAnimating()
-            }
+            startSpinner()
             
                 if (self.photosArray.count < self.photosLinks.count) {
                         loadImages(pos: position, off: offset) { (completion) in
@@ -82,6 +104,8 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     }
     
     func loadData(completion: @escaping ([String]) -> Void) {
+        startSpinner()
+        
         let url = URL(string: "https://picsum.photos/v2/list?page=1&limit=100")
         
         let sessionConfig = URLSessionConfiguration.default
@@ -94,23 +118,25 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
 
         let task = session.dataTask(with: request) { (data, response, err) in
             if (err == nil) {
-                let statusCode = (response as! HTTPURLResponse).statusCode
-                print("URL Session Task Succeeded: HTTP \(statusCode)")
                 if let data = data {
                     
                     do {
                         let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers)
 
-                        let json = jsonResult as? [[String: Any]]
+                        if let json = jsonResult as? [[String: Any]] {
                         
-                        var imagesUrls = [String]()
+                            var imagesUrls = [String]()
 
-                        for image in json! {
-                            imagesUrls.append(image["download_url"] as! String)
-                        }
-                        
-                        if imagesUrls.count == 100 {
-                            completion(imagesUrls)
+                            for image in json {
+                                imagesUrls.append(image["download_url"] as! String)
+                            }
+                            
+                            if imagesUrls.count == 100 {
+                                completion(imagesUrls)
+                            }
+                        } else {
+                            print("JSON ERROR")
+                            return
                         }
                         
                     } catch let err {
@@ -122,6 +148,7 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
                 print("URL Session Task Failed: \(err!.localizedDescription)")
             }
         }
+        
         task.resume()
         session.finishTasksAndInvalidate()
     }

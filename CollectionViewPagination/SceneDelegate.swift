@@ -14,6 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let window = UIWindow(windowScene: windowScene)
             let collectionViewController = CollectionViewController(collectionViewLayout: UICollectionViewLayout())
             let navigationController = UINavigationController(rootViewController: collectionViewController)
+            navigationController.navigationBar.tintColor = .white
             window.rootViewController = navigationController
             self.window = window
             window.makeKeyAndVisible()
