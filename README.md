@@ -1,6 +1,6 @@
 # CollectionViewPagination
 
-Simple collection view with [ImageUrl] pagination, [NHBalancedFlowLayout](https://github.com/graetzer/NHBalancedFlowLayout) and URLCache.
+Simple collection view with [ImageUrl] pagination, [NHBalancedFlowLayout](https://github.com/graetzer/NHBalancedFlowLayout) and Cache.
 
 Demo application use [Picsum](https://picsum.photos) API.
 
