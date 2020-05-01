@@ -75,6 +75,7 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
         self.view.addSubview(spinner)
             spinner.center = self.view.center
             spinner.style = .large
+            spinner.color = .white
     }
     
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -155,45 +156,17 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     
     func loadImages(pos: Int, off: Int, completion:  @escaping ([UIImage]) -> Void) {
            var images = [UIImage]()
-     
-           for i in pos..<pos+off {
-                   self.loadImageFromUrl(urlString: photosLinks[i]) { (image) in
-                       images.append(image)
-                       if i + 1 == pos + off {
-                           completion(images)
-                           return
-                       }
-                   }
-           }
-       }
-
- func loadImageFromUrl(urlString: String, completion: @escaping (UIImage) -> Void) {
         
-        let url = URL(string: urlString) ?? URL(string: "https://miro.medium.com/max/978/1*pUEZd8z__1p-7ICIO1NZFA.png")!
-        
-        
-        var image = UIImage()
-        let cache = URLCache.shared
-        let urlRequest = URLRequest(url: url)
-        
-        if let data = cache.cachedResponse(for: urlRequest)?.data, let cachedImage = UIImage(data: data) {
-            DispatchQueue.main.async {
-                print("From Cache")
-                completion(cachedImage)
-            }
-        } else {
-            let task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
-                guard let unwrappedData = data else { return }
-                do {
-                    DispatchQueue.main.async {
-                        image = UIImage(data: unwrappedData) ?? UIImage(named: "logo")!
-                        completion(image)
+            for i in pos..<pos+off {
+                ImageLoader.sharedLoader.imageForUrl(urlString: photosLinks[i], completionHandler:{(image: UIImage?, url: String) in
+                    images.append(image!)
+                    if i + 1 == pos + off {
+                        completion(images)
+                        return
                     }
-                }
+                })
             }
-            task.resume()
-        }
-    }
+       }
     
     func countIndexPathsAndUpdate() {
          var i = self.position
