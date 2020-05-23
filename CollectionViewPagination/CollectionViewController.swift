@@ -24,7 +24,7 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     }
     
     @objc func loadAPIData() {
-        if self.photosLinks.count != 0 {
+        if !self.photosLinks.isEmpty {
             self.photosLinks.removeAll()
             self.photosArray.removeAll()
             offset = 15
@@ -32,7 +32,8 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
             self.collectionView.reloadData()
         }
         
-        loadData { (imageUrls) in
+        loadData { [weak self] (imageUrls) in
+            guard let self = self else { return }
                    self.photosLinks = imageUrls
                    self.recountOffset()
                    self.downloadAllImages()
@@ -59,7 +60,7 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     
     func setupCollection() {
         self.collectionView.collectionViewLayout = NHBalancedFlowLayout()
-        self.collectionView!.register(AlbumCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        self.collectionView?.register(AlbumCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView?.delegate = self
         self.collectionView?.dataSource = self
     }
@@ -85,9 +86,9 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
             startSpinner()
             
                 if (self.photosArray.count < self.photosLinks.count) {
-                        loadImages(pos: position, off: offset) { (completion) in
-                                               
-                        self.photosArray.append(contentsOf: completion)
+                        loadImages(pos: position, off: offset) { [weak self] (completion) in
+                            guard let self = self else { return }
+                            self.photosArray.append(contentsOf: completion)
                                                                         
                             do {
                                 self.countIndexPathsAndUpdate()
@@ -98,7 +99,8 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
     }
     
     func downloadAllImages() {
-          self.loadImages(pos: self.position, off: self.offset) { (completion) in
+          self.loadImages(pos: self.position, off: self.offset) { [weak self] (completion) in
+            guard let self = self else { return }
             self.photosArray.append(contentsOf: completion)
             self.countIndexPathsAndUpdate()
         }
@@ -129,7 +131,8 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
                             var imagesUrls = [String]()
 
                             for image in json {
-                                imagesUrls.append(image["download_url"] as! String)
+                                guard let dUrl = image["download_url"] as? String else { return }
+                                imagesUrls.append(dUrl)
                             }
                             
                             if imagesUrls.count == 100 {
@@ -158,13 +161,16 @@ class CollectionViewController: UICollectionViewController, NHBalancedFlowLayout
            var images = [UIImage]()
         
             for i in pos..<pos+off {
-                ImageLoader.sharedLoader.imageForUrl(urlString: photosLinks[i], completionHandler:{(image: UIImage?, url: String) in
-                    images.append(image!)
-                    if i + 1 == pos + off {
-                        completion(images)
-                        return
-                    }
-                })
+                if photosLinks.indices.contains(i) {
+                    ImageLoader.sharedLoader.imageForUrl(urlString: photosLinks[i], completionHandler:{(image: UIImage?, url: String) in
+                            guard let im = image else { return }
+                                images.append(im)
+                                if i + 1 == pos + off {
+                                    completion(images)
+                                    return
+                                }
+                    })
+                }
             }
        }
     

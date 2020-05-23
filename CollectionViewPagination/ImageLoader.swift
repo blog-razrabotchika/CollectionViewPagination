@@ -37,7 +37,7 @@ class ImageLoader {
                     return
                 }
                 
-                if let data = data{
+                if let data = data {
                     let image = UIImage(data: data)
                     self.cache.setObject(data as AnyObject, forKey: urlString as NSString)
                     DispatchQueue.main.async {
